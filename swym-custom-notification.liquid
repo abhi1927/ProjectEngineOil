@@ -1,0 +1,170 @@
+<style>
+  @media only screen and (min-width:700px) {
+     .toast {
+       max-width: 30%;
+     }
+  }
+  .swym-wishlist-notifications-container.swym-ui-component.swym-is-safari {
+    display: none;
+  }
+  div#toast-container {
+    cursor: pointer;
+  }
+
+  .toast {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background-color: white;
+    color: black;
+    display: flex;
+    box-shadow: 15px 20px 20px 20px rgb(164 159 159 / 0%);
+    z-index: 9999;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    width: 95%;
+    height: auto;
+    border: 1px solid #afafaf;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-out;
+  }
+  .toast-message {
+    font-size: 14px;
+    line-height: 2.1;
+    flex: 1;
+    font-weight: 600;
+    font-family: monospace;
+    text-align: left;
+    letter-spacing: 0.04em;
+    color: #383c53;
+    text-transform: capitalize;
+    padding: 5px;
+  }
+
+  .toast-icon {
+    font-size: 20px;
+    margin-right: 10px;
+  }
+
+  .toast-image {
+    max-width: 100px;
+  }
+
+  .toast-image img {
+    width: auto;
+    height: auto;
+    max-width: -webkit-fill-available;
+    border: 1px solid #cac9c9;
+    margin-bottom: -10px;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 600px) {
+    .toast {
+      top: 10px;
+      left: 10px;
+    }
+    .toast-image img {
+    width: auto;
+    height: auto;
+    max-width: 80px;
+    margin-bottom: -10px;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 5px;
+    }
+  }
+
+  /* Added CSS for swipe functionality */
+  .toast-hide {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-out;
+  }
+
+  .toast-show {
+    transform: translateX(0);
+    transition: transform 0.3s ease-out;
+  }
+</style>
+<body>
+  <div id="toast-container"></div>
+</body>
+<script>
+
+      function swymCallbackFn(swat) {
+        const swymCustomNotificationsEngine = {
+          getProductData: function getProductData(event) {
+            const productTitle = event.detail.d.dt;
+            const variantTitle = event.detail.d.vi;
+            const productImageSrc = event.detail.d.iu;
+  
+            return {
+              title: productTitle,
+              variant: variantTitle,
+              imageSrc: productImageSrc
+            };
+          },
+          showProductToast: function showProductToast(productData) {
+            const toastContainer = document.getElementById("toast-container");
+            if (!toastContainer) {
+              console.error("Toast container not found");
+  
+            }
+            const parentDiv = document.createElement("div");
+            parentDiv.setAttribute("id", "swym-notifications-parent-container");
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            
+            let selectedLists = JSON.parse(localStorage.getItem("stringOfListId"));
+  
+             if (selectedLists.length === 1) {
+              toast.innerHTML = `
+              <div class="toast-message">${productData.title} - ${productData.variant} has been added to wishlist!</div>
+              <div class="toast-image"><img src="${productData.imageSrc}" alt="item image"></div>
+            `;
+            } else {
+              toast.innerHTML = `
+              <div class="toast-message">${productData.title} - ${productData.variant} has been added to multiple lists!</div>
+              <div class="toast-image"><img src="${productData.imageSrc}" alt="item image"></div>
+            `;
+            }
+
+            toast.addEventListener("click", () => {
+              swat.ui.open();
+            })
+            
+            parentDiv.appendChild(toast);
+            toastContainer.appendChild(parentDiv);
+            toast.classList.add("toast-hide");
+            toast.classList.add("toast-show");
+            setTimeout(() => {
+              parentDiv.remove();
+            }, 2500); 
+          }
+        };
+
+        swat.swymCustomNotificationsEngine = swymCustomNotificationsEngine;
+
+          swat.evtLayer.addEventListener(swat.JSEvents.addedToWishlist, function(event) {
+          const productData = swat.swymCustomNotificationsEngine.getProductData(event);
+            // Show toast with product data
+            swat.swymCustomNotificationsEngine.showProductToast(productData);
+          });
+       }  
+      
+      if (!window.SwymCallbacks) {
+        window.SwymCallbacks = [];
+      }
+      
+      window.SwymCallbacks.push(swymCallbackFn);
+      
+
+        if (!window.SwymCallbacks) {
+        window.SwymCallbacks = [];
+      }
+      window.SwymCallbacks.push(swymCallbackFn);
+
+
+</script>
