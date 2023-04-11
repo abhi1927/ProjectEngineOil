@@ -26,6 +26,7 @@
     border-radius: 6px;
     width: 95%;
     height: auto;
+    
     border: 1px solid #afafaf;
     transform: translateX(-100%);
     transition: transform 0.3s ease-out;
@@ -55,7 +56,7 @@
   .toast-image img {
     width: auto;
     height: auto;
-    max-width: -webkit-fill-available;
+    max-width: 100px;
     border: 1px solid #cac9c9;
     margin-bottom: -10px;
     border-radius: 10px;
@@ -141,7 +142,7 @@
             toast.classList.add("toast-show");
             setTimeout(() => {
               parentDiv.remove();
-            }, 2500); 
+            }, 3500); 
           }
         };
 
