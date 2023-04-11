@@ -454,12 +454,7 @@ function onSwymLoadCallback(swat) {
       swat.createList(config, successCallback, errorCallback);
     },
 
-    /*
-    Creates dynamic input and label combination to create new lists based on value of input field 
-    and a class condition of the confirm button. 
-    */
-
-    addListInput: function addListInput(listObj) {
+    createNewInput: function createNewInput (listObj) {
       let newlyCreatedInput = document.createElement("input");
       newlyCreatedInput.setAttribute("type", "input");
       newlyCreatedInput.setAttribute("id", listObj.lid);
@@ -467,17 +462,42 @@ function onSwymLoadCallback(swat) {
       newlyCreatedInput.setAttribute("class", "swym-dynamic-lists");
       newlyCreatedInput.value = listObj.lname;
 
+      return newlyCreatedInput;
+    },
+
+    createNewLabel: function createNewLabel (listObj) {
       let newlyCreatedLabel = document.createElement("label");
       newlyCreatedLabel.classList.add("list-container");
       newlyCreatedLabel.classList.add("radio-button-label");
       newlyCreatedLabel.setAttribute("for", listObj.lid);
 
+      return newlyCreatedLabel;
+    },
+
+    createNewConfirmButton: function createNewConfirmButton (listObj) {
       let newlyCreatedConfirmButton = document.createElement("button");
       newlyCreatedConfirmButton.setAttribute("id", "swym-new-input-field");
       newlyCreatedConfirmButton.setAttribute("class", "swym-fresh-input");
       newlyCreatedConfirmButton.setAttribute("list-id", listObj.lid);
       newlyCreatedConfirmButton.setAttribute("aria-label", "Confirm Button");
       newlyCreatedConfirmButton.innerHTML = "Confirm";
+
+      return newlyCreatedConfirmButton;
+    },
+
+    /*
+    Creates dynamic input and label combination to create new lists based on value of input field 
+    and a class condition of the confirm button. 
+    */
+
+    addListInput: function addListInput(listObj) {
+     
+      let newlyCreatedInput = swat.swymCustomUiModal.createNewInput (listObj);
+      
+      let newlyCreatedLabel = swat.swymCustomUiModal.createNewLabel (listObj);
+     
+      let newlyCreatedConfirmButton =  swat.swymCustomUiModal.createNewConfirmButton (listObj);
+      
 
       inputFieldContainer.insertBefore(
         newlyCreatedInput,
