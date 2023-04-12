@@ -115,9 +115,7 @@
     text-align: center;
   }
 
-  
-    
-    div#swym-multiple-wishlist-container::-webkit-autobar {
+  div#swym-multiple-wishlist-container::-webkit-autobar {
        display: unset;
        width: 4px;
     }
@@ -131,9 +129,7 @@
        border-radius: 5px;
     }
 
-  
-    
-  .swym-radio-buttons-container::-webkit-autobar {
+    .swym-radio-buttons-container::-webkit-autobar {
      display: unset;
      height: 3px !important;
     }
@@ -277,6 +273,7 @@
       padding: 15px;
       justify-content: flex-start;
       align-items: center;
+      margin-top: -30px;
     }
   
     img#swym-variant-image {
@@ -437,7 +434,7 @@
       border-radius: 5px;
       display: flex;
       flex-direction: column;
-      max-width: 700px;
+      max-width: 560px;
     }
 
     .swym-modal-heading {
@@ -470,11 +467,11 @@
     .swym-variant-add-to-list-btn:hover {
         background-color: #333;
     }
-
-    @media only screen and (max-width: 600px) {
+   
+     @media only screen and (max-width: 600px) {
         .swym-variant-modal-content {
             padding: 10px;
-            width: 100%;
+            
         }
        label.list-container {
          max-width: 150px;
@@ -493,9 +490,9 @@
             margin: 10% auto;
         }
     }
-    @media only screen and (min-width: 700px) {
+      @media only screen and (min-width: 700px) {
         .swym-variant-modal-content {
-            width: 40%;
+            width: auto;
         }
        label.list-container:hover {
         transition: transform 0.1s ease-in-out;
@@ -514,6 +511,7 @@
       color: white;
   }
     }
+    
     .swym-show-modal {
       display: flex !important;
       justify-content: center;
@@ -549,8 +547,8 @@ aria-modal="true"
     <img 
     id="swym-variant-image" 
     src="" 
-    onclick = "showZoomedView()"  
     alt="Product image"
+    aria-label="Product Image"
     >
     <div id="swym-dynamic-product-data-container">
       <p 
