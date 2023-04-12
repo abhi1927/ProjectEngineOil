@@ -6,7 +6,7 @@ and allows users to select their preferences and add products to one or more Swy
 - Author: Abhishek Lal
 - Email: support@swymcorp.com
 - Related Files: swym-collections-modal.liquid, swym-custom-notification.liquid + file for button code.
-- Date: 8th April, 2023.
+- Date: 12th April, 2023.
 */
 
 /*
@@ -46,7 +46,7 @@ function onSwymLoadCallback(swat) {
           // Executed when list is successfully deleted
         };
         let onError = function (error) {
-          console.log(`Error while deleting the List, ${lid}`, error);
+          console.error(`Error while deleting the List, ${lid}`, error);
         };
         swat.deleteList(lid, onSuccess, onError);
       },
@@ -114,6 +114,33 @@ function onSwymLoadCallback(swat) {
         );
       },
     },
+    // To zoom on the product/variant image.
+    showZoomedView: function showZoomedView() {
+      const image = document.getElementById('swym-variant-image');
+      const zoomedView = document.createElement('div');
+      zoomedView.classList.add('zoomed-image');
+      const zoomedImage = document.createElement('img');
+      zoomedImage.src = image.src;
+      zoomedView.appendChild(zoomedImage);
+
+      const closeButton = document.createElement('button');
+      closeButton.setAttribute('aria-label', 'Close zoomed image');
+      closeButton.setAttribute('class', 'swym-zoomed-image-close-button');
+      closeButton.classList.add('close-button');
+      closeButton.innerHTML = '&times;';
+      closeButton.addEventListener('click', () => {
+        document.body.removeChild(zoomedView);
+      });
+      zoomedView.appendChild(closeButton);
+
+      document.body.appendChild(zoomedView);
+
+      zoomedView.addEventListener('click', (event) => {
+        if (event.target === zoomedView) {
+          document.body.removeChild(zoomedView);
+        }
+      });
+    },
     // Create and return a new input element
     createListInput: function createListInput(listObj) {
       let newlyCreatedInput = document.createElement("input");
@@ -146,23 +173,12 @@ function onSwymLoadCallback(swat) {
     
       return newlyCreatedConfirmButton;
     },
-    insertListInputAndConfirmButton: function insertListInputAndConfirmButton(inputFieldContainer, newlyCreatedInput, newlyCreatedConfirmButton) {
-      inputFieldContainer.insertBefore(
-        newlyCreatedInput,
-        inputFieldContainer.firstChild
-      );
-      inputFieldContainer.insertBefore(
-        newlyCreatedConfirmButton,
-        inputFieldContainer.firstChild.nextSibling
-      );
-    },
-    focusAndSelectInput: function focusAndSelectInput(newlyCreatedInput) {
-      newlyCreatedInput.focus();
-      newlyCreatedInput.select();
-    },
+   
     dispatchCreateNewListEvent: function dispatchCreateNewListEvent() {
       document.dispatchEvent(new CustomEvent("swym:create-new-list"));
     },
+    
+    // Clicks listener for list name update/confirm button.
     handleConfirmButtonClick: function handleConfirmButtonClick(e, newlyCreatedInput, inputFieldContainer, newlyCreatedLabel) {
       let listName = document.querySelector(".swym-dynamic-lists");
       if (listName.value.length < 3) {
@@ -174,6 +190,7 @@ function onSwymLoadCallback(swat) {
         inputFieldContainer.innerHTML = "";
       }
     },
+    // Click the confirm button to update list name if a user clicks the enter key.
     handleInputKeyDown: function handleInputKeyDown(event) {
       if (event.key === "Enter") {
         let newlyCreatedConfirmButton = document.getElementById(
@@ -182,7 +199,7 @@ function onSwymLoadCallback(swat) {
         newlyCreatedConfirmButton.click();
       }
     },
-    
+   
     // Query for products that are already in wishlist and add the Swym-added class to it.
     addSwymAddedClass: function addSwymAddedClass() {
       let arrayOfCollectionsButtons = document.querySelectorAll(".swym-collections");
@@ -199,7 +216,7 @@ function onSwymLoadCallback(swat) {
           }
         }
       } else {
-        console.log("No Swym-collections variant buttons found!");
+        console.warn("No Swym-collections variant buttons found!");
       }
     },
    
@@ -216,7 +233,7 @@ function onSwymLoadCallback(swat) {
       };
       let errorCallBackFn = function (xhrObj) {
         // something went wrong
-        console.log("Error in fetching current lists", xhrObj);
+        console.error("Error in fetching current lists", xhrObj);
       };
 
       // call fetchLists
@@ -291,7 +308,7 @@ function onSwymLoadCallback(swat) {
         }
       );
     },
-    // DO NOT TOUCH THIS: To throttle certain function executions.
+    // DO NOT TOUCH THIS FUNCTION: To throttle function responses.
     debounce_leading: function debounce_leading(func, timeout = 300) {
       let timer;
       return (...args) => {
@@ -304,7 +321,7 @@ function onSwymLoadCallback(swat) {
         }, timeout);
       };
     },
-    // DO NOT TOUCH THIS FUNCTION.
+    //DO NOT TOUCH THIS FUNCTION.
     convertObjectToString: function convertObjectToString(selectCallBackObj) {
       let str = "";
       for (let key in selectCallBackObj) {
@@ -312,7 +329,7 @@ function onSwymLoadCallback(swat) {
       }
       return str.slice(0, -3);
     },
-    // DO NOT TOUCH THIS FUNCTION.
+    //DO NOT TOUCH THIS FUNCTION.
     getSelectedVariant: function getSelectedVariant(
       selectCallBackObj,
       productJson,
@@ -332,15 +349,16 @@ function onSwymLoadCallback(swat) {
       });
       return selectedVariant;
     },
-    // Mimicking swat.initializeActionButtons(), we wait for swat do load before collections button becomes visible.
+    // Mimicking swat.initializeActionButtons(), we wait for swat do load before collections buttons becomes visible.
     showButtonsOnlyWhenSwymLoaded: function showButtonsOnlyWhenSwymLoaded() {
       let arrayOfCollectionsButtons = document.querySelectorAll(".swym-collections");
-      if (arrayOfCollectionsButtons) {
+      let isVariantSelectionEnabled =  swat.retailerSettings.Wishlist.EnableVariantSelectionModal
+      if (arrayOfCollectionsButtons && isVariantSelectionEnabled == true) {
         for (i = 0; i < arrayOfCollectionsButtons.length; i++) {
           arrayOfCollectionsButtons[i].classList.remove("swym-custom-not-loaded");
         }
       } else {
-        console.log("No Swym-collections variant buttons found!");
+        console.warn("No Swym-collections variant buttons found!");
       }
     },
     // If no lists are selected, select the most recently created one.
@@ -367,7 +385,7 @@ function onSwymLoadCallback(swat) {
       } else if (arrayOfListId.length > 0) {
         wishlistButton.removeAttribute("disabled");
         wishlistButton.classList.remove("swym-button-disabled");
-        wishlistButton.textContent = "Add to Wishlist";
+        wishlistButton.textContent = swat.retailerSettings.Strings.WishlistTooltipBefore;
       }
     },
     toggleMultipleWishlistText: function toggleMultipleWishlistText(lists) {
@@ -439,7 +457,7 @@ function onSwymLoadCallback(swat) {
       }
 
     },
-    // Calling the Swym create list API, @config is received from createNewWishlist, it contains the a default list name+number.
+    // Calling the Swym create list API, @config is received from createNewWishlist, it contains the a default
     createList: function createList(config) {
       let successCallback = function (listObj) {
 
@@ -453,7 +471,7 @@ function onSwymLoadCallback(swat) {
 
       swat.createList(config, successCallback, errorCallback);
     },
-
+    // Create a new input for a new list.
     createNewInput: function createNewInput (listObj) {
       let newlyCreatedInput = document.createElement("input");
       newlyCreatedInput.setAttribute("type", "input");
@@ -462,9 +480,9 @@ function onSwymLoadCallback(swat) {
       newlyCreatedInput.setAttribute("class", "swym-dynamic-lists");
       newlyCreatedInput.value = listObj.lname;
 
-      return newlyCreatedInput;
+      return newlyCreatedInput
     },
-
+    // Create a new label for a new list
     createNewLabel: function createNewLabel (listObj) {
       let newlyCreatedLabel = document.createElement("label");
       newlyCreatedLabel.classList.add("list-container");
@@ -473,7 +491,7 @@ function onSwymLoadCallback(swat) {
 
       return newlyCreatedLabel;
     },
-
+    // Create a new list confirm button
     createNewConfirmButton: function createNewConfirmButton (listObj) {
       let newlyCreatedConfirmButton = document.createElement("button");
       newlyCreatedConfirmButton.setAttribute("id", "swym-new-input-field");
@@ -484,20 +502,17 @@ function onSwymLoadCallback(swat) {
 
       return newlyCreatedConfirmButton;
     },
-
     /*
     Creates dynamic input and label combination to create new lists based on value of input field 
     and a class condition of the confirm button. 
     */
 
     addListInput: function addListInput(listObj) {
-     
-      let newlyCreatedInput = swat.swymCustomUiModal.createNewInput (listObj);
-      
-      let newlyCreatedLabel = swat.swymCustomUiModal.createNewLabel (listObj);
-     
-      let newlyCreatedConfirmButton =  swat.swymCustomUiModal.createNewConfirmButton (listObj);
-      
+      let newlyCreatedInput = swat.swymCustomUiModal.createNewInput(listObj);
+
+      let newlyCreatedLabel = swat.swymCustomUiModal.createNewLabel(listObj);
+
+      let newlyCreatedConfirmButton = swat.swymCustomUiModal.createNewConfirmButton(listObj);
 
       inputFieldContainer.insertBefore(
         newlyCreatedInput,
@@ -535,17 +550,17 @@ function onSwymLoadCallback(swat) {
       });
     },
     
-    // Adding event handlers for selectable wishlists
     handleListInputEvents: function handleListInputEvents(input, label) {
       selectedList = input.getAttribute("id");
       newListName = input.value;
-
+      let isSameName = arrayOfListId.includes(newListName);
       if (newListName.length < 3) {
         greetingWishlistText.textContent = "Minimum 3 characters required!";
         input.focus();
         input.value = defaultListTitle;
         return;
-      } else if (newListName.length >= 3) {
+      } 
+      else if (newListName.length >= 3) {
         swat.swymCustomUiModal.updateSingleListName(selectedList, newListName);
         input.setAttribute("disabled", true);
         input.setAttribute("type", "radio");
@@ -568,6 +583,7 @@ function onSwymLoadCallback(swat) {
       }
 
     },
+
     // Function to create a default Wishlist if no lists are present.
     createDefaultList: function createDefaultList(lists) {
       if (lists.length === 0) {
@@ -646,7 +662,6 @@ function onSwymLoadCallback(swat) {
         swat.swymCustomUiModal.toggleMultipleWishlistText(lists);
         swat.swymCustomUiModal.renderCurrentWishlists(lists);
         listObject = lists;
-
       };
       let errorCallBackFn = function (xhrObj) {
         // something went wrong
@@ -673,10 +688,11 @@ function onSwymLoadCallback(swat) {
       };
     },
     // To attach modal events, call order- 4.
-    attachModalEvents: function attachModalEvents(modal, productJson) {
+    attachModalEvents: function attachModalEvents(modal) {
       // close button events
       swat.swymCustomUiModal.attachCloseButtonEvent(modal);
-    },
+      swymVariantImage.addEventListener("click", swat.swymCustomUiModal.showZoomedView);
+     },
 
     /*
     This function creates radio groups such as size, filter, material using productJson option(i) (i=1/2/3).
@@ -687,7 +703,7 @@ function onSwymLoadCallback(swat) {
     createRadioGroup: function createRadioGroup(option, optionIndex, productJson) {
       let variantOptions = option.values
         .map((value, valueIndex) => {
-          return `<input style="display: none;" id="${option.name}-${value}" type="radio" name="${option.name}" optionIndex="${optionIndex}" value="${value}"></input>
+          return `<input style="display: none;" id="${option.name}-${value}" type="radio" name="${option.name}" optionIndex="${optionIndex}" value="${value}" aria-label="${option.name} ${value}"></input>
                     <label class="swym-filter-labels" for="${option.name}-${value}">${value}</label>`;
         })
         .join("");
@@ -807,7 +823,7 @@ function onSwymLoadCallback(swat) {
           isActive: true
         }
       }));
-
+     
     },
     // To handle collections button state of added product
     handleAddedToWishlist: function handleAddedToWishlist(event) {
@@ -834,8 +850,10 @@ function onSwymLoadCallback(swat) {
     }
   };
 
+  // DO NOT TOUCH THIS CODE - starts
+
   swat.swymCustomUiModal = swymCustomUiModal;
-  // To prevent background scroll when modal is active.
+
   document.addEventListener("swym:variant-modal-active", function (event) {
     const backGroundBody = document.querySelector("body.gradient.swym-ready.swym-buttons-loaded");
     let isActiveModal = event.detail.isActive;
@@ -845,13 +863,13 @@ function onSwymLoadCallback(swat) {
       backGroundBody.classList.remove("swym-background-scroll-stop");
     }
   });
-  // Dispatch an event to temporarily disable the create list button after it is clicked.
+
   document.addEventListener("swym:create-new-list", function () {
     greetingWishlistText.textContent = "Confirm New Wishlist Name";
     createListButton.setAttribute("disabled", true);
     createListButton.classList.add("swym-create-list-disabled");
   });
-  // Dispatch event after a list is succssfully created to re-enable createList button.
+
   document.addEventListener("swym:new-list-created", function () {
     greetingWishlistText.textContent = "Add this item to one or more Wishlists";
     createListButton.removeAttribute("disabled");
@@ -873,40 +891,8 @@ function onSwymLoadCallback(swat) {
     greetingWishlistText.textContent = "Maximum list limit reached, please delete a list, or add to existing lists.";
   });
 
-  // DO NOT TOUCH THIS CODE - ends
-
-
-  /* Defining button Onclick events starts */
-
-  // To zoom on the product/variant image.
-  showZoomedView = function showZoomedView() {
-    const image = document.getElementById('swym-variant-image');
-    const zoomedView = document.createElement('div');
-    zoomedView.classList.add('zoomed-image');
-    const zoomedImage = document.createElement('img');
-    zoomedImage.src = image.src;
-    zoomedView.appendChild(zoomedImage);
-
-    const closeButton = document.createElement('button');
-    closeButton.setAttribute('aria-label', 'Close zoomed image');
-    closeButton.setAttribute('class', 'swym-zoomed-image-close-button');
-    closeButton.classList.add('close-button');
-    closeButton.innerHTML = '&times;';
-    closeButton.addEventListener('click', () => {
-      document.body.removeChild(zoomedView);
-    });
-    zoomedView.appendChild(closeButton);
-
-    document.body.appendChild(zoomedView);
-
-    zoomedView.addEventListener('click', (event) => {
-      if (event.target === zoomedView) {
-        document.body.removeChild(zoomedView);
-      }
-    });
-  }
-
-  // Onclick for the Add to Wishlist button on the Swym variant modal.
+  
+// Onclick for the Add to Wishlist button on the Swym variant modal.
   addToMultipleListOnclick = function addToMultipleListOnclick(event) {
     if (productData) {
       let optionsArray = productData.product.options;
@@ -926,7 +912,7 @@ function onSwymLoadCallback(swat) {
         );
       }
     } else {
-      console.log("No product json found!");
+      console.error("No product json found!");
     }
   }
 
@@ -948,8 +934,6 @@ function onSwymLoadCallback(swat) {
       });
   }, 500) 
 
-   /* Defining button Onclick events ends here */
-
   /* Show swym collections button only when swat is defined */
   swat.swymCustomUiModal.showButtonsOnlyWhenSwymLoaded();
 
@@ -967,7 +951,7 @@ function onSwymLoadCallback(swat) {
   );
 
 }
-
+// DO NOT TOUCH THIS CODE - ends
 if (!window.SwymCallbacks) {
   window.SwymCallbacks = [];
 }
