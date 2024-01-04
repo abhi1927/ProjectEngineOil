@@ -34,6 +34,14 @@ function onSwymLoadCallback(swat) {
   let persistlistIdArray = [];
   let listObject = [];
 
+   function customErrorHandling(error) {
+        swat.ui.uiRef.showErrorNotification({ message: error });
+      }
+
+    function customSuccessHandling(success) {
+        swat.ui.uiRef.showSuccessNotification({message: success,});
+    }
+
 
   // swymCustomUiModal is the main helper object that houses all major functions required by the swym-variant-modal.
 
@@ -271,7 +279,6 @@ function onSwymLoadCallback(swat) {
     closeSwymModal: function closeSwymModal() {
       selectCallBackObj = {};
       swymVariantModal.querySelector("#swym-radio-container").innerHTML = "";
-      swymVariantModal.style.display = "none";
       swymVariantModal.classList.remove("swym-show-modal");
       swymVariantModal.classList.add("swym-hide-modal");
       swat.swymCustomUiModal.deleteStaleWishlists();
@@ -351,11 +358,14 @@ function onSwymLoadCallback(swat) {
     },
     // Mimicking swat.initializeActionButtons(), we wait for swat do load before collections buttons becomes visible.
     showButtonsOnlyWhenSwymLoaded: function showButtonsOnlyWhenSwymLoaded() {
-      let arrayOfCollectionsButtons = document.querySelectorAll(".swym-collections");
+      let arrayOfCollectionsButtons = document.querySelectorAll("[data-product-card-swym-heart]");
       let isVariantSelectionEnabled =  swat.retailerSettings.Wishlist.EnableVariantSelectionModal
+      document.body.classList.add("swym-app-loaded")
       if (arrayOfCollectionsButtons && isVariantSelectionEnabled == true) {
         for (i = 0; i < arrayOfCollectionsButtons.length; i++) {
-          arrayOfCollectionsButtons[i].classList.remove("swym-custom-not-loaded");
+          arrayOfCollectionsButtons[i].classList.add("swym-loaded");
+          // arrayOfCollectionsButtons[i].onclick = fetchProductDetails;
+          // arrayOfCollectionsButtons[i].setAttribute("onclick", "fetchProductDetails(event)");
         }
       } else {
         console.warn("No Swym-collections variant buttons found!");
@@ -826,8 +836,10 @@ function onSwymLoadCallback(swat) {
      
     },
     // To handle collections button state of added product
-    handleAddedToWishlist: function handleAddedToWishlist(event) {
+     handleAddedToWishlist: function handleAddedToWishlist(event) {
       const targetProductId = event.detail.d.empi;
+      let notificationMessage = event.detail.d.dt + " has been added to your Wishlist!";
+      customSuccessHandling(notificationMessage);
       swat.swymCustomUiModal.updateSwymButtonState(targetProductId, true);
     },
     // To handle collections button state of removed product
@@ -855,7 +867,7 @@ function onSwymLoadCallback(swat) {
   swat.swymCustomUiModal = swymCustomUiModal;
 
   document.addEventListener("swym:variant-modal-active", function (event) {
-    const backGroundBody = document.querySelector("body.gradient.swym-ready.swym-buttons-loaded");
+    const backGroundBody = document.querySelector("body");
     let isActiveModal = event.detail.isActive;
     if (isActiveModal) {
       backGroundBody.classList.add("swym-background-scroll-stop");
@@ -932,7 +944,7 @@ function onSwymLoadCallback(swat) {
         productData = productJson;
         setTimeout(swat.swymCustomUiModal.openSwymVariantModal(productJson), 0);
       });
-  }, 500) 
+  }, 500)  
 
   /* Show swym collections button only when swat is defined */
   swat.swymCustomUiModal.showButtonsOnlyWhenSwymLoaded();
